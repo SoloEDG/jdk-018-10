@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { Code2, Scan, Minus, Plus } from "lucide-vue-next";
+import { Code2, Scan, Minus, Plus, Newspaper } from "lucide-vue-next";
 import { usePreview } from "../model/usePreview";
 import { gridRows } from "../lib/rows";
 import ArtCanvas from "./ArtCanvas.vue";
+import { PosterPreview } from "../../poster";
 const p = usePreview();
 const text = computed(() =>
   p.doc.grid ? gridRows(p.doc.grid).join("\n") : "",
@@ -22,7 +23,12 @@ const text = computed(() =>
           :class="{ active: p.mode.value === 'text' }"
           @click="p.mode.value = 'text'"
         >
-          <Code2 :size="14" /> 纯文本
+          <Code2 :size="14" /> 纯文本</button
+        ><button
+          :class="{ active: p.mode.value === 'poster' }"
+          @click="p.mode.value = 'poster'"
+        >
+          <Newspaper :size="14" /> 海报分页
         </button>
       </div>
       <label class="color-toggle"
@@ -34,7 +40,10 @@ const text = computed(() =>
     </div>
     <div class="art-stage">
       <div class="stage-label">OUTPUT / LIVE RENDER <span>●</span></div>
-      <div class="art-scroll">
+      <div v-if="p.mode.value === 'poster'" class="poster-host">
+        <PosterPreview />
+      </div>
+      <div v-else class="art-scroll">
         <ArtCanvas
           v-if="p.doc.grid && p.mode.value === 'art'"
           :grid="p.doc.grid"
@@ -67,7 +76,7 @@ const text = computed(() =>
         }}
         <span class="muted">/ {{ p.count.value }} 个字符</span></span
       >
-      <div class="zoom">
+      <div class="zoom" v-if="p.mode.value !== 'poster'">
         <button
           aria-label="缩小"
           @click="p.zoom.value = Math.max(25, p.zoom.value - 25)"
@@ -81,6 +90,7 @@ const text = computed(() =>
           <Plus :size="14" />
         </button>
       </div>
+      <span v-else class="mono muted">多页拼接 · 字符不跨页缝</span>
     </div>
     <div class="workspace-note">
       <span>从像素，到字符。</span
